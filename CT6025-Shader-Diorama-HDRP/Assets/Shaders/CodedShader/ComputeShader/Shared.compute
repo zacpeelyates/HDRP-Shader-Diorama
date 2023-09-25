@@ -1,0 +1,13 @@
+uint _PointsPerAxis;
+
+uint QuadraticValue(uint x, uint y, uint z) //Zpoints^2 + Ypoints + X
+{
+    return (z * pow(_PointsPerAxis,2)) + (y * _PointsPerAxis) + x;
+}
+
+uint QuadraticValue(uint3 u) //Zpoints^2 + Ypoints + X
+{
+    return (u.z * pow(_PointsPerAxis,2)) + (u.y * _PointsPerAxis) + u.x;
+}
+
+

@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53cd7717e1449724b87ecda0f8459037, type: 3}
+  m_Name: New GenerationSettings
+  m_EditorClassIdentifier: 
+  NoiseShader: {fileID: 7200000, guid: 292b199a4df97b644b66495bec48d2aa, type: 3}
+  GenShader: {fileID: 7200000, guid: 51304f12352e52f47b6395814504c7ae, type: 3}
+  seed: 25
+  surfaceLevel: 0.78
+  pointsPerAxis: 25
+  BoundsInternal:
+    size: -15.57
+    offset: {x: 0, y: 0, z: 0}
+  NoiseInternal:
+    Octaves: 8
+    Persistance: 1.72
+    Lacunarity: 1.4
+    Scale: 2
+    Weight: 1.24
+    WeightScale: 2.76
+    Floor: -3.04
+    FloorWeight: 2.68
+    FloorOffset: 4.05

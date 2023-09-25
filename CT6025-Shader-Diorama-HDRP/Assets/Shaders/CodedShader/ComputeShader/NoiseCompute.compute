@@ -1,0 +1,81 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+#include "NSL.compute"
+#include "Shared.compute"
+
+struct Bounds
+{
+    float size;
+    float3 centre;
+    float3 offset;
+    float spacing;
+    //8 Stride
+};
+
+struct NoiseParams
+{
+    int   Octaves;
+    float Persistance;
+    float Lacunarity;
+
+    float Scale;
+    float Weight;
+    float WeightScale;
+
+    float Floor;
+    float FloorWeight;
+    float FloorOffset;
+
+    //Stride 9 (8 + int);
+
+};
+
+StructuredBuffer<float3> _InOffsets;
+RWStructuredBuffer<float4> _OutVerts;
+
+StructuredBuffer<Bounds> _BoundsSB;
+StructuredBuffer<NoiseParams> _NoiseParamsSB;
+
+float NoiseAt(float3 pos)
+{    
+
+    NoiseParams NoiseParams = _NoiseParamsSB[0];
+    float noise = 0; 
+    float amp = 1; 
+    float w = 1;
+
+    float freq = NoiseParams.Scale/100;
+    for(int i = 0; i < NoiseParams.Octaves; i++)
+    {
+        float n = pow(1 - abs(snoise(pos * freq + _InOffsets[i])),2) * w;
+
+        w = clamp(n * NoiseParams.WeightScale,0,1);
+
+        noise += n*amp;
+
+        amp *= NoiseParams.Persistance;
+        freq *= NoiseParams.Lacunarity;
+    }
+
+       float result = -(pos.y + NoiseParams.FloorOffset) + noise * NoiseParams.Weight;
+       if(pos.y < NoiseParams.Floor) result += NoiseParams.FloorWeight;
+        
+       return result;
+
+}
+
+[numthreads(8,8,8)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    for(int i = 0; i < 3; ++i)
+    {
+        if(id[i] >= _PointsPerAxis) return; //early out
+    }
+
+    Bounds Bounds = _BoundsSB[0];
+
+     float3 pos = Bounds.centre + (id * Bounds.spacing - Bounds.size/2);
+    _OutVerts[QuadraticValue(id)] = float4(pos, NoiseAt(pos)); //store noise in w component 
+  
+}

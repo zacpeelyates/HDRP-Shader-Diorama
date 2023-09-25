@@ -70,3 +70,19 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+Footer
+© 2022 GitHub, Inc.
+Footer navigation
+Terms
+Privacy
+Security
+Status
+Docs
+*/Library/*
+*/Logs/*
+*/Temp/*
+*/ProjectSettings/*
+*.dwlt
+*/.vsconfig
+*/UserSettings/*
+*.cache

@@ -1,0 +1,91 @@
+
+#pragma kernel CSMain
+
+#include "CMTable.compute"
+#include "Shared.compute"
+
+struct Tri
+{
+    float3 a;
+    float3 b;
+    float3 c;
+};
+
+AppendStructuredBuffer<Tri> _OutTris;
+RWStructuredBuffer<float4> _InVerts;
+
+float _ISOLevel;
+
+float3 VertLerp(float4 a, float4 b) //Linear interpolation based on w coords
+{
+    float l = (_ISOLevel - a.w) / (b.w - a.w);
+    return a.xyz + l * (b.xyz - a.xyz);
+    
+}
+
+void AppendTris(int config, float4 v[8])
+{
+     //Get tris for this configuration
+    int n = 0;
+    for(int i = 0; triTable[config][i] != -1; i+=3)
+    {
+        //vert 1 (i)
+        int a = CtoA[triTable[config][i]];
+        int b = CtoB[triTable[config][i]];
+
+        //vert 2 (i+1)
+        int c = CtoA[triTable[config][i+1]];
+        int d = CtoB[triTable[config][i+1]];
+
+        //vert 3 (i+2)
+        int e = CtoA[triTable[config][i+2]];
+        int f = CtoB[triTable[config][i+2]];
+
+        Tri t = (Tri)0;
+        t.a = VertLerp(v[a],v[b]);
+        t.b = VertLerp(v[c],v[d]);
+        t.c = VertLerp(v[e],v[f]);
+
+        _OutTris.Append(t); //Add to buffer
+
+    }
+}
+
+int GetConfig(float4 corners[8])
+{
+    uint config = 0;
+    for(uint i = 0; i < 8; ++i)
+    {
+        if(corners[i].w < _ISOLevel) config |= 1 << i; //set bit 'i' of 8-bit config value (256 possible combinations)
+    }
+    return config;
+}
+
+[numthreads(8,8,8)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    for(uint i = 0; i < 3; ++i)
+    {
+        if(id[i] + 1 >= _PointsPerAxis) return; //early out
+    }
+
+    //Get corners
+     float4 corners[8] = {
+        _InVerts[QuadraticValue(id.x, id.y, id.z)],
+        _InVerts[QuadraticValue(id.x + 1, id.y, id.z)],
+        _InVerts[QuadraticValue(id.x + 1, id.y, id.z + 1)],
+        _InVerts[QuadraticValue(id.x, id.y, id.z + 1)],
+        _InVerts[QuadraticValue(id.x, id.y + 1, id.z)],
+        _InVerts[QuadraticValue(id.x + 1, id.y + 1, id.z)],
+        _InVerts[QuadraticValue(id.x + 1, id.y + 1, id.z + 1)],
+        _InVerts[QuadraticValue(id.x, id.y + 1, id.z + 1)]
+    };
+    //What cube configuration are we looking at? 
+    int config = GetConfig(corners);
+    //Append Appropriate Triangles
+    AppendTris(config,corners);
+}
+    
+
+
+
